@@ -1,44 +1,56 @@
 # ComplianceKit
 
-ComplianceKit is a hybrid productized-service plus SaaS workflow for SOC 2 audit readiness. The current repo state is an early scaffold for the web app layer built with Next.js and Supabase.
+[![PLpgSQL](https://img.shields.io/badge/postgresql-%23336791?style=flat-square&logo=postgresql)](#) [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](#)
 
-## Current stage
+> SOC 2 readiness without the $50k consulting bill — track controls, collect evidence, and ship your audit.
 
-- Stage: scaffolded application shell
-- Product focus: auth, org setup, controls seeding, and first integration flows
-- Deployment target: Vercel
+ComplianceKit is a SOC 2 audit readiness workflow application built on Next.js 14 and Supabase. The current scaffold covers auth, org setup, controls seeding, and first integration flows — designed to be deployed on Vercel with Supabase handling auth and Postgres.
 
-## Commands
+## Features
 
-Use `pnpm` in this repo.
+- **Controls library** — seed and track SOC 2 controls across Trust Service Criteria
+- **Evidence collection** — attach evidence artifacts to control requirements
+- **Organization setup** — multi-tenant org management with role-based access
+- **Auth** — Supabase Auth with SSR-safe session handling via @supabase/ssr
+- **Integration hooks** — extensible integration flow architecture for connecting data sources
 
+## Quick Start
+
+### Prerequisites
+- Node.js 18+ and pnpm
+- Supabase project (cloud or local with `supabase start`)
+
+### Installation
 ```bash
+git clone https://github.com/saagpatel/ComplianceKit
+cd ComplianceKit
 pnpm install
+cp .env.example .env.local
+# Add your Supabase URL and anon key to .env.local
+```
+
+### Usage
+```bash
+# Development
 pnpm dev
-pnpm lint
+
+# Type check
 pnpm typecheck
+
+# Build
 pnpm build
 ```
 
-## Verification
+## Tech Stack
 
-The current minimal quality gate is intentionally small for the scaffold stage:
+| Layer | Technology |
+|-------|------------|
+| Framework | Next.js 14 (App Router) |
+| Database | Supabase (PostgreSQL) |
+| Auth | Supabase Auth + @supabase/ssr |
+| Frontend | React 18 + TypeScript + Tailwind CSS + Radix UI |
+| Deployment | Vercel |
 
-- `pnpm lint`
-- `pnpm typecheck`
-- `pnpm build`
+## License
 
-The repo-level verify list lives in `.codex/verify.commands`.
-
-## Key docs
-
-- `CLAUDE.md`
-- `DISCOVERY-SUMMARY.md`
-- `IMPLEMENTATION-ROADMAP.md`
-- `RESUMPTION-PROMPT.md`
-
-## Near-term focus
-
-1. Finalize auth and org bootstrap flow.
-2. Replace placeholder UI with the first app shell and dashboard skeleton.
-3. Add the first automated product tests once the auth and org flows stabilize.
+MIT
