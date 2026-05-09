@@ -24,6 +24,7 @@ pnpm build
 
 The current minimal quality gate is intentionally small for the scaffold stage:
 
+- `pnpm install --frozen-lockfile --ignore-scripts`
 - `pnpm lint`
 - `pnpm typecheck`
 - `pnpm build`
