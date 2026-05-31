@@ -31,7 +31,7 @@ Vercel Cron (daily) → Evidence Collector Worker → pulls from all connected i
 - TypeScript strict mode everywhere — no `any` types
 - File naming: kebab-case for files, PascalCase for components
 - API routes in `app/api/` following Next.js App Router conventions
-- Supabase client: use `createServerComponentClient` in Server Components, `createRouteHandlerClient` in API routes
+- Supabase client: use `createServerClient` from `@supabase/ssr` in Server Components and API routes (see `lib/supabase/`)
 - Every database table must have `org_id` column with RLS policy
 - Git commits: `type(scope): description` (e.g., `feat(okta): add OAuth callback handler`)
 - Test RLS with 2 orgs before merging any DB-related changes
@@ -39,9 +39,9 @@ Vercel Cron (daily) → Evidence Collector Worker → pulls from all connected i
 
 ## Current Phase
 **Phase 0: Service Infrastructure + Project Scaffolding** (target: Week 0-1)
-- [ ] Initialize Next.js 14 project with App Router, TypeScript, Tailwind CSS, shadcn/ui
-- [ ] Configure Supabase project: Auth (email + Google OAuth), full database schema
-- [ ] Implement RLS policies on every table
+- [x] Initialize Next.js 14 project with App Router, TypeScript, Tailwind CSS, shadcn/ui
+- [x] Configure Supabase project: full database schema (9 tables + RLS); Auth requires env vars at runtime
+- [x] Implement RLS policies on every table
 - [ ] Seed SOC 2 controls table (45 controls mapped to Trust Services Criteria)
 - [ ] Create auth flow: sign up → create org → invite members
 - [ ] Deploy to Vercel with Supabase environment variables
