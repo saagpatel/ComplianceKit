@@ -5,6 +5,11 @@ the code as read-only ground truth and edits only documentation so it reflects t
 current state. It changed no source code, config, tests, or lockfiles, and ran no builds or tests.
 Evidence was gathered entirely by reading source files, manifests, migration SQL, and git history.
 
+This is the second reconciliation pass on this repo. The first ran against `33f6b3f` and was
+committed as `7040a31`. This pass reconciles the two subsequent commits:
+- `7040a31` — docs: reconcile documentation to current code state (first pass)
+- `9ce83d2` — docs: lean CLAUDE.md (claude-md-lint)
+
 ---
 
 ## Per-Claim Findings
@@ -14,33 +19,40 @@ Evidence was gathered entirely by reading source files, manifests, migration SQL
 **Status:** `consistent`
 **Evidence basis:** `verified-by-reading-code`
 
-`README.md` and `CLAUDE.md` describe ComplianceKit as "a hybrid productized-service plus SaaS
-workflow for SOC 2 audit readiness" in an "early scaffold" state. `app/page.tsx` renders a
-"Coming soon" placeholder; `app/layout.tsx` is a minimal root layout with no app shell.
-The description matches what the code shows.
+`README.md` describes ComplianceKit as "a hybrid productized-service plus SaaS workflow for SOC 2
+audit readiness" in an "early scaffold" state. `app/page.tsx:13` renders "SOC 2 audit readiness
+for startups. Coming soon." `app/layout.tsx` is a minimal root layout with no app shell, sidebar,
+or auth wiring. The description matches the code.
 
 ---
 
 ### 2. Current state
 
-**Status:** `drifted`
+**Status:** `drifted` (portfolio-context block in `CLAUDE.md`)
 **Evidence basis:** `verified-by-reading-code`
 
-**Finding A — CLAUDE.md Phase 0 checkboxes (`CLAUDE.md:41–47`)**
+**Finding A — CLAUDE.md portfolio-context Phase 0 checkboxes (`CLAUDE.md:75–77`)**
 
-All six Phase 0 tasks were shown as `[ ]` (not started). Reading the code confirms three are done:
+The `<!-- portfolio-context:start / end -->` block duplicates the Phase 0 task list with all six
+items `[ ]`. The main CLAUDE.md body (outside the portfolio-context block) was correctly updated
+in the prior reconciliation pass and in the subsequent lean pass. The portfolio-context block was
+not updated in either pass.
+
+Reading the code confirms three tasks are done:
 
 | Task | Evidence |
 |---|---|
 | Initialize Next.js 14 + App Router + TypeScript + Tailwind + shadcn/ui | `package.json:13` (`next 14.2.35`), `components/ui/`, `tailwind.config.ts` |
-| Configure Supabase project — full database schema | `supabase/migrations/00001_initial_schema.sql` — 9 tables, all wired |
-| Implement RLS policies on every table | Same migration file — `ENABLE ROW LEVEL SECURITY` + policies on all 9 tables |
+| Configure Supabase project — full database schema | `supabase/migrations/00001_initial_schema.sql` — 9 tables with RLS |
+| Implement RLS policies on every table | Same migration — `ENABLE ROW LEVEL SECURITY` + policies on all 9 tables |
 
-Two tasks remain genuinely not started (no `supabase/seed.sql`, no `app/(auth)/` directory).
-Deploy status is unverifiable from source.
+Three tasks remain not started: no `supabase/seed.sql`, no `app/(auth)/`, deploy status
+unverifiable from source.
 
 **What was changed:**
-- `CLAUDE.md:41–47` — three `[ ]` → `[x]`; item 2 text trimmed to remove "Auth (email + Google OAuth)" since the auth runtime wiring is env-var config, not code that can be verified here.
+- `CLAUDE.md:75–77` — three `[ ]` → `[x]`; item 2 text corrected to remove the "Auth (email +
+  Google OAuth)" claim (auth runtime wiring is env-var config, not verifiable from source) and
+  clarify the 9-table count.
 
 **Before:**
 ```
@@ -55,35 +67,31 @@ Deploy status is unverifiable from source.
 - [x] Implement RLS policies on every table
 ```
 
+**Note:** This block may be auto-managed by an external portfolio system. If it is regenerated,
+the operator should re-apply these three `[x]` corrections or configure the portfolio system to
+read phase completion from the migration and source tree.
+
 ---
 
 ### 3. Stack
 
-**Status:** `drifted`
+**Status:** `drifted` (portfolio-context How-To-Run section in `CLAUDE.md`)
 **Evidence basis:** `verified-by-reading-code`
 
-**Finding B — Deprecated Supabase client API in Dev Conventions (`CLAUDE.md:34`)**
+**Finding B — Deprecated Supabase client API in portfolio-context block (`CLAUDE.md:100`)**
 
-The Dev Conventions section instructed: `use createServerComponentClient in Server Components,
-createRouteHandlerClient in API routes`. These are from `@supabase/auth-helpers-nextjs`, which
-is not in `package.json` and is a deprecated package. The actual code at `lib/supabase/server.ts:2`
-and `lib/supabase/middleware.ts:1` both import `createServerClient` from `@supabase/ssr` (`^0.8.0`),
-which is the current Supabase SSR package.
+The main CLAUDE.md body (line 40) was correctly updated in the first pass to reference
+`createServerClient` from `@supabase/ssr`. The portfolio-context block's "How To Run" section
+still referenced the deprecated `createServerComponentClient` / `createRouteHandlerClient`
+functions, which come from `@supabase/auth-helpers-nextjs` — a package not present in
+`package.json`. The actual code at `lib/supabase/server.ts:1` and `lib/supabase/middleware.ts:1`
+both import `createServerClient` from `@supabase/ssr` (`^0.8.0`).
 
 **What was changed:**
-- `CLAUDE.md:34` — replaced deprecated API reference with the actual one in use.
+- `CLAUDE.md:100` — replaced deprecated API reference with the one in use.
 
-**Before:** `use createServerComponentClient in Server Components, createRouteHandlerClient in API routes`
-**After:** `use createServerClient from @supabase/ssr in Server Components and API routes (see lib/supabase/)`
-
-**Finding C — Full planned stack listed as if installed (`CLAUDE.md:6–16`)**
-
-`CLAUDE.md` Tech Stack lists Resend, Stripe, `@react-pdf/renderer`, and the Anthropic Claude API
-as part of the stack. None of these appear in `package.json`. These are the planned/target stack
-for Phase 2–3, not the currently installed stack. This is a forward-looking design decision, not
-a code-backed fact. **No edit made** — the "Tech Stack" section in CLAUDE.md is a product
-architecture document, not an npm manifest. Marking as `unverifiable` rather than wrong, since
-the section accurately describes the intended architecture.
+**Before:** `use \`createServerComponentClient\` in Server Components, \`createRouteHandlerClient\` in API routes`
+**After:** `use \`createServerClient\` from \`@supabase/ssr\` in Server Components and API routes (see \`lib/supabase/\`)`
 
 ---
 
@@ -94,7 +102,8 @@ the section accurately describes the intended architecture.
 
 `README.md` lists five commands (`pnpm install`, `pnpm dev`, `pnpm lint`, `pnpm typecheck`,
 `pnpm build`). All five appear as `scripts` in `package.json:5–10`. The Verification block in
-the README matches `.codex/verify.commands` exactly. No changes needed.
+the README matches `.codex/verify.commands` exactly. `docs/FIRST-EXECUTION-SLICE.md:91–95`
+lists the same four verify commands. No changes needed.
 
 ---
 
@@ -104,18 +113,23 @@ the README matches `.codex/verify.commands` exactly. No changes needed.
 **Evidence basis:** `unverifiable-because-forward-looking`
 
 The "Do NOT" list in `CLAUDE.md:64–74` is advisory guidance for future coding sessions, not
-claims about current code state. These constraints are neither provable nor disprovable from
-a static code read. Left unchanged.
+claims about current code state. These constraints are neither provable nor disprovable from a
+static code read. Left unchanged.
 
 ---
 
 ### 6. Next move
 
-**Status:** `consistent` (README) / `drifted` (RESUMPTION-PROMPT.md — see below)
+**Status:** `consistent`
 **Evidence basis:** `verified-by-reading-code`
 
-`README.md`'s "Near-term focus" (lines 43–45) says: auth/org flow → dashboard skeleton → tests.
-This is accurate — none of these exist in the codebase. No changes to README needed.
+`README.md`'s "Near-term focus" (lines 43–45) lists: auth/org flow → dashboard skeleton →
+automated tests. None of these exist in the codebase (`app/(auth)/` absent, `app/(dashboard)/`
+absent, no test files found). The description is accurate for the current scaffold state.
+
+`docs/FIRST-EXECUTION-SLICE.md` defines the v0 slice precisely ("One user can sign up, create
+an organization, and see the 45 SOC 2 controls") and frames all ingredients as things that
+"must exist" — not claims that they do exist. Consistent with the code. No changes needed.
 
 ---
 
@@ -125,46 +139,53 @@ The following files contain significant drift but are outside the editable scope
 (`README.md` / `CLAUDE.md` / `AGENTS.md` / `DOC-RECONCILIATION.md` / `docs/`).
 A human should correct these before the next coding session.
 
-### `RESUMPTION-PROMPT.md` — overstates Phase 0 completion
+### `RESUMPTION-PROMPT.md` — overstates Phase 0 completion (carry-forward from first pass)
 
-This file is the handoff prompt used to resume Claude Code sessions. It currently claims Phase 0
-is complete and Phase 1 (Okta integration) should start next. The code does not support this.
+This file is the handoff prompt used to resume Claude Code sessions. It was flagged in the first
+reconciliation pass but has not been updated. All drift items remain:
 
 | Line | Claim | Reality |
 |---|---|---|
+| 10 | "Claude Sonnet 4.5 generates security policies" | `CLAUDE.md` specifies `claude-sonnet-4-6` |
 | 13 | "Last completed phase: Phase 0" | Phase 0 is ~50% done: schema+RLS done, seed/auth/deploy not done |
 | 14 | "Current phase: Phase 1 — Okta Integration" | Phase 0 is not finished; Phase 1 work has not started |
-| 15 | "45 SOC 2 controls seeded, auth flow working" | No `supabase/seed.sql` exists; no `app/(auth)/` directory exists |
-| 19 | "`app/layout.tsx` — Root layout with sidebar nav and header" | `app/layout.tsx:21–35` has no sidebar or header; it is a minimal root wrapper |
+| 15 | "45 SOC 2 controls seeded, auth flow working" | No `supabase/seed.sql`; no `app/(auth)/` directory |
+| 19 | "`app/layout.tsx` — Root layout with sidebar nav and header" | `app/layout.tsx` is a minimal wrapper with no sidebar or header |
 | 20 | "`app/(auth)/` — Sign up, sign in, org creation flows" | Directory does not exist |
 | 21 | "`app/(dashboard)/` — Dashboard shell with placeholder content" | Directory does not exist |
 | 23 | "`supabase/seed.sql` — 45 SOC 2 controls" | File does not exist |
-| 54 | "Claude Sonnet 4.5 for AI policy gen" | `CLAUDE.md:54` specifies `claude-sonnet-4-6` |
+| 54 | "Claude Sonnet 4.5 for AI policy gen" | Should be `claude-sonnet-4-6` |
 
-**One-line fix:** Update lines 13–24 to reflect the actual state: schema + RLS + scaffold done;
-seed data, auth flows, and dashboard not yet built; next task is completing Phase 0 Session 2
-(seed data + auth flow + dashboard shell) before starting Phase 1.
-
----
-
-### `IMPLEMENTATION-ROADMAP.md:130` — model version inconsistency
-
-Line 130 references "Claude Sonnet 4.5" for gap narrative generation. `CLAUDE.md:54` specifies
-`claude-sonnet-4-6`. One-line fix: change "Sonnet 4.5" → "Sonnet 4.6" on that line.
+**One-line fix:** Update lines 13–24 to reflect actual state: schema + RLS + scaffold done;
+seed data, auth flows, dashboard not built; next task is completing Phase 0 Session 2. Update
+all "Sonnet 4.5" references to "Sonnet 4.6" (`claude-sonnet-4-6`).
 
 ---
 
-### `CLAUDE.md:85–92` — Portfolio Context section has same unchecked checkboxes
+### `IMPLEMENTATION-ROADMAP.md:15` — table count mismatch
 
-The `<!-- portfolio-context:start / end -->` block (lines 76–134) duplicates the Phase 0
-checklist with all items still unchecked. This block appears to be auto-managed by an external
-portfolio system, so it was not edited here to avoid clobbering a regeneration. The portfolio
-system should be re-run (or the section manually updated) to reflect the three completed items.
+Line 15 reads: "all 8 tables from spec: organizations, users, integrations, controls,
+org_controls, evidence, policies, gap_assessments, sync_logs"
+
+Counting the names listed: 9 tables. The migration at
+`supabase/migrations/00001_initial_schema.sql` creates exactly 9 tables (same list). The word
+"8" is wrong.
+
+**One-line fix:** `IMPLEMENTATION-ROADMAP.md:15` — change "all 8 tables" → "all 9 tables".
+
+---
+
+### `IMPLEMENTATION-ROADMAP.md:128` — model version (carry-forward from first pass)
+
+Line 128: "AI narrative generation via Claude Sonnet 4.5". `CLAUDE.md` specifies
+`claude-sonnet-4-6`.
+
+**One-line fix:** `IMPLEMENTATION-ROADMAP.md:128` — change "Sonnet 4.5" → "Sonnet 4.6".
 
 ---
 
 ## Footer
 
-Generated: 2026-05-30 22:36:01 PDT
-Branch: `docs/truth-up-2026-05-30`
-HEAD sha reconciled against: `33f6b3f1a29e2622967539fe81870a8e42ab59a6`
+Generated: 2026-06-02 19:44:34 PDT
+Branch: `docs/truth-up-2026-06-02`
+HEAD sha reconciled against: `9ce83d28a5564595db3661ec502a56faee7bb584`
